@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест по материалам урока</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; line-height: 1.6; }
+        .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .question { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .question-text { font-weight: bold; margin-bottom: 10px; display: block; }
+        .options label { display: block; margin: 8px 0; cursor: pointer; padding: 8px; border-radius: 4px; transition: background 0.2s; }
+        .options label:hover { background: #f9f9f9; }
+        .options input[type="radio"] { margin-right: 10px; }
+        #user-name { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        #submit-btn { display: block; width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+        #submit-btn:hover { background: #0056b3; }
+        #submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        #result { margin-top: 25px; padding: 20px; border-radius: 4px; text-align: center; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Тест по уроку</h1>
+        <p style="text-align:center; color:#666;">Проверьте свои знания. В тесте 10 вопросов.</p>
+
+        <!-- Поле для имени -->
+        <input type="text" id="user-name" placeholder="Введите ваше имя (необязательно)" />
+
+        <form id="quiz-form">
+            <!-- Вопросы будут сгенерированы здесь с помощью JavaScript -->
+        </form>
+
+        <button id="submit-btn" type="submit" form="quiz-form">Завершить тест</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // ⚠️ ВАЖНО: Вставьте сюда URL, полученный после развертывания Google Apps Script
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCpueSsEBOZmiLtubpIG0LsQZyU5lhCgBp-0Ds_aRWBwL2wAF0VcssshBC8IQZLDw7/exec';
+
+        // ⚠️ ВАЖНО: Отредактируйте вопросы и правильные ответы здесь
+        const questions = [
+    	{ 
+        	q: 'Continue the phrase: "career..."', 
+        	options: ['path', 'road', 'field'], 
+        	correct: 0 
+    	},
+    	{ 
+        	q: 'Continue the phrase: "learn..."', 
+        	options: ['doing', 'the ropes', '-'], 
+        	correct: 1 
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "to specialize..."', 
+        	options: ['on', 'at', 'in'], 
+        	correct: 2
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "go ... of use"', 
+        	options: ['out', 'in', 'without'], 
+        	correct: 0
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "rule of ..."', 
+        	options: ['thumb', 'thing', 'rule'], 
+        	correct: 0
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "keep ... of something"', 
+        	options: ['thumb', 'track', 'in'], 
+        	correct: 1 
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "... the Internet"', 
+        	options: ['at', 'in', 'on'], 
+        	correct: 2
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "to keep ..."', 
+        	options: ['up with', 'up without', '-'], 
+        	correct: 0
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "Chase down..."', 
+        	options: ['a cat', 'a dog', 'a bug'], 
+        	correct: 2
+    	},
+
+    	{ 
+        	q: 'Continue the phrase: "... code"', 
+        	options: ['spaghetti', 'soup', 'soul'], 
+        	correct: 0
+    	}
+	];
+
+
+        const form = document.getElementById('quiz-form');
+        const resultDiv = document.getElementById('result');
+        const submitBtn = document.getElementById('submit-btn');
+        const userNameInput = document.getElementById('user-name');
+
+        // 1. Генерация вопросов на странице
+        questions.forEach((item, index) => {
+            const questionBlock = document.createElement('div');
+            questionBlock.className = 'question';
+            
+            const questionText = document.createElement('span');
+            questionText.className = 'question-text';
+            questionText.textContent = `${index + 1}. ${item.q}`;
+            questionBlock.appendChild(questionText);
+
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options';
+
+            item.options.forEach((option, optIndex) => {
+                const label = document.createElement('label');
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `q${index}`; // Уникальное имя для группы
+                radio.value = optIndex;   // Сохраняем индекс варианта
+                radio.required = true;    // Делаем выбор обязательным
+                
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(option));
+                optionsDiv.appendChild(label);
+            });
+
+            questionBlock.appendChild(optionsDiv);
+            form.appendChild(questionBlock);
+        });
+
+        // 2. Обработка отправки формы
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Предотвращаем перезагрузку страницы
+
+            // Блокируем кнопку, чтобы избежать двойной отправки
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+            resultDiv.innerHTML = ''; 
+
+            // Подсчет правильных ответов
+            let score = 0;
+            questions.forEach((item, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected && parseInt(selected.value) === item.correct) {
+                    score++;
+                }
+            });
+
+            const total = questions.length;
+            const percentage = Math.round((score / total) * 100) + '%';
+            const userName = userNameInput.value.trim() || 'Аноним';
+
+            // 3. Отправка данных в Google Apps Script
+            // Используем URLSearchParams, чтобы данные ушли как x-www-form-urlencoded.
+            // Это предотвращает проблемы с CORS (предварительный OPTIONS-запрос).
+            const formData = new URLSearchParams();
+            formData.append('name', userName);
+            formData.append('score', score);
+            formData.append('total', total);
+            formData.append('percentage', percentage);
+
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString()
+            })
+            .then(response => {
+                // Проверяем, что ответ успешный (даже если внутри JSON ошибка)
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Проверяем ответ от скрипта
+                if (data.result === 'success') {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `✅ Результат отправлен!<br>Ваш счёт: <strong>${score} из ${total} (${percentage})</strong>.<br>Спасибо за участие, ${userName}!`;
+                    // Блокируем форму после успешной отправки
+                    form.style.display = 'none';
+                    submitBtn.style.display = 'none';
+                } else {
+                    throw new Error(data.message || 'Ошибка на стороне сервера');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка отправки:', error);
+                resultDiv.className = 'error';
+                resultDiv.textContent = '❌ Не удалось отправить результат. Проверьте соединение и попробуйте снова.';
+                // Разблокируем кнопку для повторной попытки
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Завершить тест';
+            });
+        });
+    </script>
+</body>
+</html>
